@@ -1,99 +1,72 @@
-let contacts = [];
+const form = document.getElementById("contact-form");
+const nameInput = document.getElementById("contact-name");
+const phoneInput = document.getElementById("contact-phone");
+const emailInput = document.getElementById("contact-email");
+const tbody = document.getElementById("contact-tbody");
 
-function loadFromHTML() {
-  let rows = document.querySelectorAll("#contact-tbody tr");
-  rows.forEach(row => {
-    let tds = row.querySelectorAll("td");
-    contacts.push({
-      name: tds[1].innerText,
-      phone: tds[2].innerText,
-      email: tds[3].innerText
-    });
+let contacts = JSON.parse(localStorage.getItem("contacts")) || [];
+
+let phoneRegex = /^(0|\+84)[0-9]{9,10}$/;
+let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+let nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/;
+
+function render() {
+  tbody.innerHTML = "";
+
+  contacts.forEach((c, index) => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${c.name}</td>
+            <td>${c.phone}</td>
+            <td>${c.email}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-edit" onclick="editContact(${index})">Sửa</button>
+                    <button class="btn-delete" onclick="deleteContact(${index})">Xóa</button>
+                </div>
+            </td>
+        `;
+
+    tbody.appendChild(tr);
   });
 }
 
-function renderContacts() {
-  let str = "";
-  for (let i = 0; i < contacts.length; i++) {
-    str += `<tr>
-      <td>${i + 1}</td>
-      <td>${contacts[i].name}</td>
-      <td>${contacts[i].phone}</td>
-      <td>${contacts[i].email}</td>
-      <td>
-        <div class="action-buttons">
-          <button onclick="deleteContact(${i})">Xóa</button>
-        </div>
-      </td>
-    </tr>`;
-  }
-  document.getElementById("contact-tbody").innerHTML = str;
-}
-
-function addContact(e) {
-  e.preventDefault();
-
-  let name = document.getElementById("contact-name").value.trim();
-  let phone = document.getElementById("contact-phone").value.trim();
-  let email = document.getElementById("contact-email").value.trim();
-
-  if (!validateContact(name, phone, email)) return;
-
-  contacts.push({ name, phone, email });
-
-  alert("Thêm liên hệ thành công!");
-
-  renderContacts();
-  document.getElementById("contact-form").reset();
-}
-
-function deleteContact(index) {
-  if (confirm("Bạn có chắc muốn xóa?")) {
-    contacts.splice(index, 1);
-    renderContacts();
-  }
-}
-
-function validateContact(name, phone, email) {
-  if (!name) {
+function validate(name, phone, email) {
+  if (!name || name.trim() === '') {
     alert("Họ tên không được để trống!");
     return false;
   }
-
   if (name.length < 2) {
     alert("Họ tên phải có ít nhất 2 ký tự!");
     return false;
   }
-
-  let nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/;
   if (!nameRegex.test(name)) {
     alert("Họ tên không được chứa số hoặc ký tự đặc biệt!");
     return false;
   }
 
-  if (!phone) {
+  if (!phone || phone.trim() === '') {
     alert("Số điện thoại không được để trống!");
     return false;
   }
-
-  let phoneRegex = /^(0|\+84)[0-9]{9,10}$/;
-  if (!phoneRegex.test(phone)) {
-    alert("Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại 10 chữ số (bắt đầu bằng 0) hoặc định dạng quốc tế (+84...)");
+  if (!phoneRegex.test(phone.trim())) {
+    alert("Số điện thoại không hợp lệ!");
     return false;
   }
 
-  if (!email) {
+  if (!email || email.trim() === '') {
     alert("Email không được để trống!");
     return false;
   }
-
-  let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  if (!emailRegex.test(email.trim())) {
     alert("Email không hợp lệ!");
     return false;
   }
 
-  if (contacts.some(c => c.email.toLowerCase() === email.toLowerCase())) {
+  const isExist = contacts.some((c) => c.email === email);
+  if (isExist) {
     alert("Email đã tồn tại trong danh bạ!");
     return false;
   }
@@ -101,7 +74,30 @@ function validateContact(name, phone, email) {
   return true;
 }
 
-document.getElementById("contact-form").onsubmit = addContact;
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
 
-loadFromHTML();
-renderContacts();
+  const name = nameInput.value.trim();
+  const phone = phoneInput.value.trim();
+  const email = emailInput.value.trim();
+
+  if (!validate(name, phone, email)) return;
+
+  contacts.push({ name, phone, email });
+
+  localStorage.setItem("contacts", JSON.stringify(contacts));
+
+  render();
+  form.reset();
+
+  alert("Thêm liên hệ thành công!");
+});
+function deleteContact(index) {
+  if (confirm("Bạn có chắc muốn xóa?")) {
+    contacts.splice(index, 1);
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+    render();
+  }
+}
+
+render()
