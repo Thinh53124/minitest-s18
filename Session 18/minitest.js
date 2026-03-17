@@ -1,30 +1,4 @@
-let contacts = [
-  {
-    name: "Nguyễn Văn An",
-    phone: "0901234567",
-    email: "nguyenvanan@email.com",
-  },
-  {
-    name: "Trần Thị Bình",
-    phone: "0912345678",
-    email: "tranthibinh@email.com",
-  },
-  {
-    name: "Lê Văn Cường",
-    phone: "0923456789",
-    email: "levancuong@email.com",
-  },
-  {
-    name: "Phạm Thị Dung",
-    phone: "0934567890",
-    email: "phamthidung@email.com",
-  },
-  {
-    name: "Hoàng Văn Em",
-    phone: "0945678901",
-    email: "hoangvanem@email.com",
-  },
-];
+let contacts = [];
 
 function loadFromHTML() {
   let rows = document.querySelectorAll("#contact-tbody tr");
